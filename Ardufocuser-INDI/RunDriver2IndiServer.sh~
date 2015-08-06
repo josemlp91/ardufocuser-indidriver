@@ -1,0 +1,3 @@
+#!/bin/bash
+
+java -jar ../../I4JServer/dist/I4JServer.jar -add=/home/josemlp/workspace/proyectos/Ardufocuser-INDI/DriverINDI/I4JArdufocuserDriver/dist/I4JArdufocuserDriver.jar
