@@ -28,9 +28,14 @@ import laazotea.indi.driver.INDISwitchProperty;
 import laazotea.indi.driver.INDITextElementAndValue;
 import laazotea.indi.driver.INDITextProperty;
 
+import laazotea.indi.ardufocuser.ArduinoConnection;
+import gnu.io.SerialPortEvent;
+import gnu.io.SerialPortEventListener;
+import static java.lang.Thread.sleep;
+
 /**
  *
- * @author zerjillo
+ * @author @josemlp91 and @zerjillo
  */
 public class I4JArdufocuserDriver extends INDIFocuserDriver implements INDIConnectionHandler, Runnable {
 
@@ -51,7 +56,9 @@ public class I4JArdufocuserDriver extends INDIFocuserDriver implements INDIConne
 
     private INDINumberProperty stepPerPulseP;
     private INDINumberElement stepPerPulseE;
-    
+
+    private ArduinoConnection ac;
+
     //private INDISwitchProperty motorP;
     //private INDISwitchElement motorE;
     //.. todas las variables privadas.
@@ -60,23 +67,21 @@ public class I4JArdufocuserDriver extends INDIFocuserDriver implements INDIConne
 
         portP = INDIPortProperty.createSaveablePortProperty(this, "/dev/ttyUSB0");
 
+        // Creamos una instancia de Arduino.
         // motorP = new INDISwitchProperty(this, "factory_settings", "Factory Settings", "Expert Configuration", PropertyStates.IDLE, PropertyPermissions.RW, 0, SwitchRules.AT_MOST_ONE);
         // motorE = new INDISwitchElement(motorP, "factory_setting", "Factory Settings", SwitchStatus.OFF);
-
         this.addProperty(portP);
 
         initializeStandardProperties();
-        
-        
-      if (stepPerPulseP == null) {
-      stepPerPulseP = INDINumberProperty.createSaveableNumberProperty(this, "stepPerPulse", "Steps per Pulse", "Configuration", PropertyStates.IDLE, PropertyPermissions.RW);
-      stepPerPulseE = stepPerPulseP.getElement("stepPerPulse_value");
-      if (stepPerPulseE == null) {
-        stepPerPulseE = new INDINumberElement(stepPerPulseP, "stepPerPulse_value", "Steps per Pulse", "1", "1", "99", "1", "%.0f");
-      }
-    }
 
-    
+        if (stepPerPulseP == null) {
+            stepPerPulseP = INDINumberProperty.createSaveableNumberProperty(this, "stepPerPulse", "Steps per Pulse", "Configuration", PropertyStates.IDLE, PropertyPermissions.RW);
+            stepPerPulseE = stepPerPulseP.getElement("stepPerPulse_value");
+            if (stepPerPulseE == null) {
+                stepPerPulseE = new INDINumberElement(stepPerPulseP, "stepPerPulse_value", "Steps per Pulse", "1", "1", "99", "1", "%.0f");
+            }
+        }
+
     }
 
     @Override
@@ -107,21 +112,20 @@ public class I4JArdufocuserDriver extends INDIFocuserDriver implements INDIConne
 
         sendMessageToArdufocus(msg);
 
-
     }
 
     @Override
     public void speedHasBeenChanged() {
-        
+
         String msg = "ASPEED?" + getCurrentSpeed();
         //System.out.println(msg);
         sendMessageToArdufocus(msg);
         desiredSpeedSet();
     }
-    
+
     @Override
     public void stopHasBeenRequested() {
-  
+
         String msg = "ASTOP?";
         sendMessageToArdufocus(msg);
         stopped();
@@ -144,17 +148,17 @@ public class I4JArdufocuserDriver extends INDIFocuserDriver implements INDIConne
     @Override
     public void processNewNumberValue(INDINumberProperty property, Date timestamp, INDINumberElementAndValue[] elementsAndValues) {
         super.processNewNumberValue(property, timestamp, elementsAndValues);
-        
+
         if (property == stepPerPulseP) {
             System.out.println(elementsAndValues[0].getValue());
-            
+
             stepPerPulseE.setValue("99");
-            
+
             stepPerPulseP.setState(PropertyStates.OK);
             try {
-              updateProperty(stepPerPulseP);
-            } catch(INDIException e) {
-                
+                updateProperty(stepPerPulseP);
+            } catch (INDIException e) {
+
             }
         }
     }
@@ -167,23 +171,20 @@ public class I4JArdufocuserDriver extends INDIFocuserDriver implements INDIConne
     @Override
     public void driverConnect(Date timestamp) throws INDIException {
 
-        System.out.println("Connecting to Ardufocuser");
-        File port = new File(portP.getPort());
+        // Creamos el conector.
+        ac = new ArduinoConnection();
+        boolean connected = ac.connectToBoard();
 
-        if (!port.exists()) {
-            throw new INDIException("Connection to Ardufocuser failed: port file does not exist.");
+        if (connected) {
+            System.out.println("Connected!");
+        } else {
+            System.out.println("Could not connect to Arduino :-(");
+            return;
         }
+        
+       // Añadimos el listener.
+       ac.addListener(new ArdufocuserListener(ac));
 
-        try {
-            fwInput = new FileInputStream(portP.getPort());
-            fwOutput = new FileOutputStream(portP.getPort());
-
-            readingThread = new Thread((Runnable) this);
-            readingThread.start();
-        } catch (IOException e) {
-            throw new INDIException("Connection to Ardufocuser failed. Check port permissions");
-        }
-                
         showSpeedProperty();
         showStopFocusingProperty();
         addProperty(stepPerPulseP);
@@ -193,41 +194,41 @@ public class I4JArdufocuserDriver extends INDIFocuserDriver implements INDIConne
     @Override
     public void driverDisconnect(Date timestamp) throws INDIException {
 
-          System.out.println("Disconnecting Ardufocuser");
-    System.out.flush();
+        System.out.println("Disconnecting Ardufocuser");
+        System.out.flush();
 
-    removeProperty(stepPerPulseP);
-           hideSpeedProperty();
+        removeProperty(stepPerPulseP);
+        hideSpeedProperty();
         hideStopFocusingProperty();
-        
-    try {
-      if (readingThread != null) {
-        readerEnd = true;
-        readingThread = null;
-      }
 
-      sleep(200);
+        try {
+            if (readingThread != null) {
+                readerEnd = true;
+                readingThread = null;
+            }
 
-      if (fwInput != null) {
-        fwInput.close();
-        fwOutput.close();
-      }
+            sleep(200);
 
-      fwInput = null;
-      fwOutput = null;
-    } catch (IOException e) {
-    }   
-        
- 
-    
-    System.out.println("Disconnected Ardufocuser");
-    System.out.flush();    
-        
+            if (fwInput != null) {
+                fwInput.close();
+                fwOutput.close();
+            }
+
+            fwInput = null;
+            fwOutput = null;
+        } catch (IOException e) {
+        }
+
+        System.out.println("Disconnected Ardufocuser");
+        System.out.flush();
+
     }
 
-    //Hebra lectora
+    //Hebra lectora, meter dentro del evento de lectura. 
     String[] posCommand = new String[]{"APOSITION?", "ASTOP?"};
 
+    
+    // No necesitamos que sea una hebra .
     @Override
     public void run() {
         readerEnded = false;
@@ -243,9 +244,8 @@ public class I4JArdufocuserDriver extends INDIFocuserDriver implements INDIConne
                     boolean continueParsing = true;
 
                     while (continueParsing) {
-                        
+
                         //System.out.println(buffer);
-                        
                         int pos = 1000000;
 
                         for (int i = 0; i < posCommand.length; i++) {
@@ -261,31 +261,27 @@ public class I4JArdufocuserDriver extends INDIFocuserDriver implements INDIConne
                         if (pos != 1000000) {
                             buffer = buffer.substring(pos);
 
-                        
                             if (buffer.length() >= 20) {
                                 ///Aqui el parseo de cada comando.
                                 if (buffer.startsWith("APOSITION?")) {
 
                                     int pp = buffer.indexOf("?") + 1;
-                                    String s = buffer.substring(pp,20).trim();
+                                    String s = buffer.substring(pp, 20).trim();
 
                                     try {
                                         int p = Integer.parseInt(s);
 
                                         positionChanged(p);
                                     } catch (NumberFormatException e) {
-                                   System.out.println("XXXX");
-                                   
-                                   
+                                        System.out.println("XXXX");
+
                                     }
-                                } else if (buffer.startsWith("ASTOP?")){
-                                
-                                finalPositionReached();
-                                
+                                } else if (buffer.startsWith("ASTOP?")) {
+
+                                    finalPositionReached();
+
                                 }
 
-                               
-                                
                                 buffer = buffer.substring(20);
                             } else {
                                 continueParsing = false;
@@ -305,22 +301,29 @@ public class I4JArdufocuserDriver extends INDIFocuserDriver implements INDIConne
         readerEnded = true;
     }
 
-    private void sendMessageToArdufocus(String message) {
-        try {
-            for (int i = 0; i < message.length(); i++) {
-                fwOutput.write(message.charAt(i));
-                sleep(10);
-            }
-            
-            for (int i = 0 ; i < 20 - message.length() ; i++) {
-                fwOutput.write(' ');
-                sleep(10);
-            }
-        
-            fwOutput.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
+    // Metodo a la escucha del puerto serie del Ardufocuser.
+    private static class ArdufocuserListener implements SerialPortEventListener {
+
+        private ArduinoConnection ac;
+
+        public ArdufocuserListener(ArduinoConnection ac) {
+            this.ac = ac;
         }
+
+        @Override
+        public void serialEvent(SerialPortEvent serialPortEvent) {
+            if (serialPortEvent.getEventType() == SerialPortEvent.DATA_AVAILABLE) {
+                String inLine = ac.readLine();
+                
+                //Implementar aqui el parser.
+                
+                System.out.println("GOT: " + inLine);
+            }
+        }
+    }
+
+    private void sendMessageToArdufocus(String message) {
+       ac.sendString(message);
     }
 
     private void sleep(int milis) {
