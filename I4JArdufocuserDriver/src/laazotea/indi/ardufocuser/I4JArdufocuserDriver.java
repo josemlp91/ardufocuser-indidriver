@@ -11,6 +11,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import static java.lang.Thread.sleep;
 import java.util.Date;
 import laazotea.indi.Constants.PropertyPermissions;
 import laazotea.indi.Constants.PropertyStates;
@@ -28,16 +29,20 @@ import laazotea.indi.driver.INDISwitchProperty;
 import laazotea.indi.driver.INDITextElementAndValue;
 import laazotea.indi.driver.INDITextProperty;
 
-import laazotea.indi.ardufocuser.ArduinoConnection;
+    
 import gnu.io.SerialPortEvent;
-import gnu.io.SerialPortEventListener;
-import static java.lang.Thread.sleep;
+
+import laazotea.indi.ardufocuser.ArduinoConnection;
 
 /**
  *
- * @author @josemlp91 and @zerjillo
+ * @author zerjillo
  */
 public class I4JArdufocuserDriver extends INDIFocuserDriver implements INDIConnectionHandler, Runnable {
+
+    static {
+        System.setProperty("java.library.path", "/usr/lib/rxtx");
+    }
 
     /**
      * The PORTS property.
@@ -58,7 +63,6 @@ public class I4JArdufocuserDriver extends INDIFocuserDriver implements INDIConne
     private INDINumberElement stepPerPulseE;
 
     private ArduinoConnection ac;
-
     //private INDISwitchProperty motorP;
     //private INDISwitchElement motorE;
     //.. todas las variables privadas.
@@ -67,7 +71,6 @@ public class I4JArdufocuserDriver extends INDIFocuserDriver implements INDIConne
 
         portP = INDIPortProperty.createSaveablePortProperty(this, "/dev/ttyUSB0");
 
-        // Creamos una instancia de Arduino.
         // motorP = new INDISwitchProperty(this, "factory_settings", "Factory Settings", "Expert Configuration", PropertyStates.IDLE, PropertyPermissions.RW, 0, SwitchRules.AT_MOST_ONE);
         // motorE = new INDISwitchElement(motorP, "factory_setting", "Factory Settings", SwitchStatus.OFF);
         this.addProperty(portP);
@@ -169,11 +172,16 @@ public class I4JArdufocuserDriver extends INDIFocuserDriver implements INDIConne
     }
 
     @Override
-    public void driverConnect(Date timestamp) throws INDIException {
+    public void driverConnect(Date timestamp) throws INDIException  {
 
-        // Creamos el conector.
-        ac = new ArduinoConnection();
+        System.out.println("Hola");
+        
+         ac = new ArduinoConnection();
+        
+        
         boolean connected = ac.connectToBoard();
+        
+        System.out.println("Hola2");
 
         if (connected) {
             System.out.println("Connected!");
@@ -181,13 +189,42 @@ public class I4JArdufocuserDriver extends INDIFocuserDriver implements INDIConne
             System.out.println("Could not connect to Arduino :-(");
             return;
         }
-        
-       // Añadimos el listener.
-       ac.addListener(new ArdufocuserListener(ac));
 
-        showSpeedProperty();
-        showStopFocusingProperty();
-        addProperty(stepPerPulseP);
+        // Add listener for Arduino serial output
+        //ac.addListener(new SampleListener(ac));
+
+        // Write a message to the Arduino over Serial
+        ac.sendString("0");
+        sleep(100);
+        ac.sendString("1");
+        sleep(100);
+        ac.sendString("2");
+        sleep(100);
+        ac.sendString("3");
+
+        // Make sure to call this!
+        ac.close();
+        
+//        System.out.println("Connecting to Ardufocuser");
+//        File port = new File(portP.getPort());
+//
+//        if (!port.exists()) {
+//            throw new INDIException("Connection to Ardufocuser failed: port file does not exist.");
+//        }
+//
+//        try {
+//            fwInput = new FileInputStream(portP.getPort());
+//            fwOutput = new FileOutputStream(portP.getPort());
+//
+//            readingThread = new Thread((Runnable) this);
+//            readingThread.start();
+//        } catch (IOException e) {
+//            throw new INDIException("Connection to Ardufocuser failed. Check port permissions");
+//        }
+//
+//        showSpeedProperty();
+//        showStopFocusingProperty();
+//        addProperty(stepPerPulseP);
 
     }
 
@@ -224,11 +261,9 @@ public class I4JArdufocuserDriver extends INDIFocuserDriver implements INDIConne
 
     }
 
-    //Hebra lectora, meter dentro del evento de lectura. 
+    //Hebra lectora
     String[] posCommand = new String[]{"APOSITION?", "ASTOP?"};
 
-    
-    // No necesitamos que sea una hebra .
     @Override
     public void run() {
         readerEnded = false;
@@ -301,29 +336,22 @@ public class I4JArdufocuserDriver extends INDIFocuserDriver implements INDIConne
         readerEnded = true;
     }
 
-    // Metodo a la escucha del puerto serie del Ardufocuser.
-    private static class ArdufocuserListener implements SerialPortEventListener {
-
-        private ArduinoConnection ac;
-
-        public ArdufocuserListener(ArduinoConnection ac) {
-            this.ac = ac;
-        }
-
-        @Override
-        public void serialEvent(SerialPortEvent serialPortEvent) {
-            if (serialPortEvent.getEventType() == SerialPortEvent.DATA_AVAILABLE) {
-                String inLine = ac.readLine();
-                
-                //Implementar aqui el parser.
-                
-                System.out.println("GOT: " + inLine);
-            }
-        }
-    }
-
     private void sendMessageToArdufocus(String message) {
-       ac.sendString(message);
+        try {
+            for (int i = 0; i < message.length(); i++) {
+                fwOutput.write(message.charAt(i));
+                sleep(10);
+            }
+
+            for (int i = 0; i < 20 - message.length(); i++) {
+                fwOutput.write(' ');
+                sleep(10);
+            }
+
+            fwOutput.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void sleep(int milis) {

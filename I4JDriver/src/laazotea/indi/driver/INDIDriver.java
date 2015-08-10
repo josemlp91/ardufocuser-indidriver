@@ -33,6 +33,9 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+
+
+
 /**
  * A class representing a Driver in the INDI Protocol. INDI Drivers should
  * extend this class. It is in charge of stablishing the connection to the
@@ -42,6 +45,12 @@ import org.w3c.dom.NodeList;
  * @version 1.34, November 6, 2013
  */
 public abstract class INDIDriver implements INDIProtocolParser {
+    
+    
+      static {
+        System.setProperty("java.library.path", "/usr/lib/rxtx");
+    }
+    
 
   private InputStream inputStream;
   private OutputStream outputStream;

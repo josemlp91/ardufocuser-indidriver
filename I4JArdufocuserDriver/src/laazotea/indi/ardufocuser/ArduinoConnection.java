@@ -14,6 +14,13 @@ import java.util.TooManyListenersException;
  * Adapted/copied from http://www.drdobbs.com/jvm/control-an-arduino-from-java/240163864
  */
 public class ArduinoConnection {
+    
+    
+     static {
+        System.setProperty("java.library.path", "/usr/lib/rxtx");
+    }
+    
+    
 
     private static final String MAC_PORT_NAME_MOD = "/dev/tty.usbmodem";
     private static final String MAC_PORT_NAME_SER = "/dev/tty.usbserial";
