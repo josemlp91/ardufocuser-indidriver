@@ -18,7 +18,9 @@
 package laazotea.indi.client.examples;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import laazotea.indi.Constants;
 import laazotea.indi.client.*;
 
@@ -106,12 +108,12 @@ public class SimpleINDIClient implements INDIServerConnectionListener, INDIDevic
    *
    * @param args
    */
-  public static void main(String[] args) {
-    if ((args.length < 1) || (args.length > 2)) {
-      printErrorMessageAndExit();
-    }
+  public static void main(String[] args) throws IOException {
+   // if ((args.length < 1) || (args.length > 2)) {
+   //   printErrorMessageAndExit();
+   // }
 
-    String host = args[0];
+    String host = "indiserver.no-ip.org";
     int port = 7624;
 
     if (args.length > 1) {
@@ -122,7 +124,14 @@ public class SimpleINDIClient implements INDIServerConnectionListener, INDIDevic
       }
     }
 
+   
     SimpleINDIClient sic = new SimpleINDIClient(host, port);
+    List<INDIDevice> devi = null;
+    while (devi==null){
+    devi=sic.connection.getDevicesAsList();
+    System.out.println(devi);
+    }
+    
   }
 
   private static void printErrorMessageAndExit() {

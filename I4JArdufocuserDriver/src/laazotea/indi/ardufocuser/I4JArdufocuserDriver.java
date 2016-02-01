@@ -4,14 +4,10 @@
  */
 package laazotea.indi.ardufocuser;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+
+import laazotea.indi.ardufocuser.ArduinoConnection;
 import java.io.InputStream;
 import java.io.OutputStream;
-import static java.lang.Thread.sleep;
 import java.util.Date;
 import laazotea.indi.Constants.PropertyPermissions;
 import laazotea.indi.Constants.PropertyStates;
@@ -29,18 +25,16 @@ import laazotea.indi.driver.INDISwitchProperty;
 import laazotea.indi.driver.INDITextElementAndValue;
 import laazotea.indi.driver.INDITextProperty;
 
+
+
 import gnu.io.SerialPortEvent;
 import gnu.io.SerialPortEventListener;
-import laazotea.indi.ardufocuser.ArduinoConnection;
 
 /**
  * @author @josemlp  @zerjillo
  */
 public class I4JArdufocuserDriver extends INDIFocuserDriver implements INDIConnectionHandler {
 
-    static {
-        System.setProperty("java.library.path", "/usr/lib/rxtx");
-    }
 
   /**
      * The PORTS property.

@@ -12,15 +12,12 @@ import java.util.TooManyListenersException;
  * Manage connection to Arduino microcontroller.
  *
  * Adapted/copied from http://www.drdobbs.com/jvm/control-an-arduino-from-java/240163864
+ * 
+ *    https://github.com/hatboysam/grannytracker/tree/master/GrannyTrackerJava
  */
 public class ArduinoConnection {
     
-    
-     static {
-        System.setProperty("java.library.path", "/usr/lib/rxtx");
-    }
-    
-    
+  
 
     private static final String MAC_PORT_NAME_MOD = "/dev/tty.usbmodem";
     private static final String MAC_PORT_NAME_SER = "/dev/tty.usbserial";
@@ -28,6 +25,8 @@ public class ArduinoConnection {
     private static final String LINUX_PORT_NAME_DEV = "/dev/usbdev";
     private static final String LINUX_PORT_NAME_TTY = "/dev/tty";
     private static final String LINUX_PORT_NAME_SER = "/dev/serial";
+
+    
     private static final String[] PORT_NAMES = new String[]{
             MAC_PORT_NAME_MOD,
             MAC_PORT_NAME_SER,

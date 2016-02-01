@@ -603,6 +603,7 @@ public class INDIServerConnection implements INDIProtocolParser {
 
     for (int i = 0; i < l.size(); i++) {
       names[i] = l.get(i).getName();
+      
     }
 
     return names;
