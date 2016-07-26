@@ -1,4 +1,4 @@
-package laazotea.indi.ardufocuser;
+package i4jardufocuserdriver;
 
 import gnu.io.CommPortIdentifier;
 import gnu.io.SerialPort;

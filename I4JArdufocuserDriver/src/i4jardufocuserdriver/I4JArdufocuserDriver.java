@@ -1,3 +1,4 @@
+package i4jardufocuserdriver;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -18,15 +19,12 @@ import laazotea.indi.driver.INDISwitchProperty;
 import laazotea.indi.driver.INDITextElementAndValue;
 import laazotea.indi.driver.INDITextProperty;
 import laazotea.indi.Constants.SwitchStatus;
-import laazotea.indi.Constants.SwitchRules;
-import laazotea.indi.driver.INDISwitchElement;
-
-import laazotea.indi.ardufocuser.ArduinoConnection;
 
 import gnu.io.SerialPortEvent;
 import gnu.io.SerialPortEventListener;
-
-
+import i4jardufocuserdriver.ArduinoConnection;
+import laazotea.indi.Constants.SwitchRules;
+import laazotea.indi.driver.INDISwitchElement;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 
