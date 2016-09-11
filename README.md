@@ -5,7 +5,7 @@ RXTX for Java:
 ```
 sudo apt-get install librxtx-java
 ```
-## Run Script
+## Runing Script
 
 ```
 #!/bin/bash
