@@ -44,5 +44,7 @@ java  -Djava.library.path=/usr/lib/jni -Djava.library.path=/usr/lib/rxtx \
 Contamos con Raspbindi una imagen personalizada de Rasbian, con todas las herramientas y servicios INDI instalado.
 Puede descargarla en el [enlace](https://drive.google.com/file/d/0Bz7iXJ4BvZ9SbnJPZWkweVhUVjQ/view?usp=sharing)
 
+## Más información
 
+Documentación oficial INDI2Java [enlace](http://indilib.org/develop/indiforjava/i4j-indi-driver.html)
 
