@@ -49,7 +49,7 @@ java  -Djava.library.path=/usr/lib/jni -Djava.library.path=/usr/lib/rxtx \
   ```
 ## Instalación en Raspberry PI.
 
-Contamos con Raspbindi una imagen personalizada de Rasbian, con todas las herramientas y servicios INDI instalado.
+Contamos con Raspbindi una imagen personalizada de Raspbian, con todas las herramientas y servicios INDI instalado.
 Puede descargarla en el [enlace](https://drive.google.com/file/d/0Bz7iXJ4BvZ9SbnJPZWkweVhUVjQ/view?usp=sharing)
 
 ## Más información
