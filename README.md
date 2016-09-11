@@ -2,9 +2,9 @@
 
 
 RXTX for Java:
-
-  sudo apt-get install librxtx-java
-
+```
+sudo apt-get install librxtx-java
+```
 ## Run Script
 
 ```
