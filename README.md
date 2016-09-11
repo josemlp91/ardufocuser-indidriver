@@ -30,6 +30,8 @@ sudo apt-get install librxtx-java
 ```
 ## Runing Script
 
+Script para lanar el servidor INDI junto con el Driver Ardufocuser.
+
 ```
 #!/bin/bash
 
