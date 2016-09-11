@@ -15,6 +15,12 @@ along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
 
 ---
 
+## Enlace a Servidor INDI
+
+En el siguiente enlace puede encontrar el enlace de descarga y un mini tutorial del funcionamiento del Servidor INDI sobre el que vamos a ejecutar nuestro Driver personalizado.
+
+[Enlace documetación servidor INDI](http://indilib.org/develop/indiforjava/i4j-server-manual.html)
+
 ## Dependencias
 
 
