@@ -17,10 +17,7 @@ along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
 
 ## Servidor INDI
 
-En el siguiente enlace puede encontrar el enlace de descarga y un mini tutorial del funcionamiento del Servidor INDI sobre el que vamos a ejecutar nuestro Driver personalizado.
-
-
-
+En el siguiente enlace puede encontrar el enlace de descarga y un mini tutorial del funcionamiento del Servidor INDI sobre el que vamos ejecutamos el Driver INDI Ardufocuser.
 
 [Enlace documetación servidor INDI](http://indilib.org/develop/indiforjava/i4j-server-manual.html)
 
